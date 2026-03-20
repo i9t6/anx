@@ -20,10 +20,15 @@ You can easily build and run using docker:
 If you have docker-compose installed this can be shortened to:
 * `docker-compose up -d`
 
+**Docker Image Details (as of 2026):** The Dockerfile has been updated to use modern, actively maintained base images:
+* Builder stage: `maven:3.9.9-eclipse-temurin-11` (Maven 3.9.9 with Eclipse Temurin JDK 11)
+* Runtime stage: `jetty:9.4.57-jre11` (Jetty 9.4.57 with OpenJDK 11)
+* Multi-stage build reduces final image footprint
+* YANG model cache directory is automatically created at `/var/lib/yangcache`
+
 Note: You need at least 2-3 GB of RAM on your Docker (Virtual) Machine to run this application. In case you are running it on your
 laptop, please increase the RAM assigned to Docker to 3 GB. See https://docs.docker.com/docker-for-windows/#advanced or
 https://docs.docker.com/docker-for-mac/#advanced
-
 
 ### Using JDK and Maven
 If you have a working Java development environment with maven on your machine, you can also launch the explorer with an embedded webserver using:
@@ -50,6 +55,38 @@ enabled device or orchestrator supporting NETCONF Monitoring [RFC 6022](https://
 5. For IOS-XR telemetry you will be able to view and edit sensors groups by using the Telemetry Tools on the left-hand side. Select or type the name of a sensor group and use Edit to make changes to it. If you have previously selected a node in the model browser, its sensor path will be prepopulated in the sensor group editor for convenience. If your device runs a 64-bit version of IOS XR, you can also view a JSON-encoding of the live feed of the Telemetry data exactly as it is sent to your telemetry collector.
 
 
+
+## Troubleshooting
+
+### YANG Model Parsing Failures
+If the explorer fails to parse downloaded YANG models, check the application logs for detailed error messages:
+```bash
+docker logs -f anx-anx-1
+docker logs anx-anx-1 2>&1 | grep -E "Failed to parse|SchemaResolutionException|Exception"
+```
+
+The parser now provides detailed diagnostic information including:
+* Specific schema resolution failures
+* Missing model dependencies (imports)
+* Cache directory creation issues
+
+### WSL2 Network Access to VMware Networks
+To allow WSL2 to reach VMware host-only networks (e.g., 192.168.74.0/24, 192.168.75.0/24):
+
+Edit `%UserProfile%\.wslconfig` and ensure:
+```ini
+[wsl2]
+networkingMode=nat
+dnsTunneling=true
+autoProxy=true
+```
+
+Then restart WSL:
+```powershell
+wsl --shutdown
+```
+
+This allows ANX running in WSL to reach NETCONF devices on VMware networks.
 
 ## ANC - Java NETCONF client library
 ANC is the basis of the explorer and offers abstraction for most of the features of NETCONF.
