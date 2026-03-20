@@ -58,6 +58,7 @@ public class NetconfYangParser implements SchemaSourceProvider<YangTextSchemaSou
     private InMemorySchemaSourceCache<ASTSchemaSource> cache = InMemorySchemaSourceCache.createSoftCache(repository, ASTSchemaSource.class);
     private List<String> warnings = new LinkedList<>();
     private String cacheDirectory;
+    private String lastError;
 
     public interface RetrieverCallback {
         void onSchema(int iteration, String identifier, String version, Exception e);
@@ -70,6 +71,15 @@ public class NetconfYangParser implements SchemaSourceProvider<YangTextSchemaSou
 
     public void setCacheDirectory(String cacheDirectory) {
         this.cacheDirectory = cacheDirectory;
+        if (cacheDirectory != null) {
+            try {
+                Files.createDirectories(new File(cacheDirectory).toPath());
+            } catch (IOException e) {
+                lastError = "Failed to create cache directory " + cacheDirectory + ": " + e.getMessage();
+                warnings.add(lastError);
+                e.printStackTrace();
+            }
+        }
     }
 
     public Collection<YangTextSchemaSource> getSources() {
@@ -149,6 +159,8 @@ public class NetconfYangParser implements SchemaSourceProvider<YangTextSchemaSou
     }
 
     public void parse() {
+        schemaContext = null;
+        lastError = null;
         EffectiveModelContextFactory factory = repository.createEffectiveModelContextFactory(SchemaContextFactoryConfiguration
                 .builder().setFilter(SchemaSourceFilter.ALWAYS_ACCEPT).build());
         Collection<SourceIdentifier> requiredSources = new HashSet<>(sources.keySet());
@@ -176,6 +188,8 @@ public class NetconfYangParser implements SchemaSourceProvider<YangTextSchemaSou
                 break;
             } catch (InterruptedException | ExecutionException f) {
                 f.printStackTrace();
+                Throwable cause = (f.getCause() != null) ? f.getCause() : f;
+                lastError = cause.getClass().getSimpleName() + ": " + cause.getMessage();
 				if (f.getCause() instanceof SchemaResolutionException) {
                     SchemaResolutionException e = (SchemaResolutionException)f.getCause();
                     if (!e.getUnsatisfiedImports().isEmpty()) {
@@ -201,6 +215,9 @@ public class NetconfYangParser implements SchemaSourceProvider<YangTextSchemaSou
                 }
 			}
         }
+
+        if (schemaContext == null && lastError == null)
+            lastError = "No schema context could be built from retrieved YANG models";
     }
 
     public SchemaContext getSchemaContext() {
@@ -213,6 +230,10 @@ public class NetconfYangParser implements SchemaSourceProvider<YangTextSchemaSou
 
     public void addWarning(String warning) {
         warnings.add(warning);
+    }
+
+    public String getLastError() {
+        return lastError;
     }
 
 	@Override

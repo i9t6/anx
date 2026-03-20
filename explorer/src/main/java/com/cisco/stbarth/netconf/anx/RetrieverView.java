@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
@@ -253,9 +254,22 @@ public class RetrieverView extends VerticalLayout {
     
                 if (ui.parser.getSchemaContext() != null)
                     ui.showMain();
-                else
-                    Notification.show("Failed to parse schemas: no valid YANG models found!",
-                            Notification.Type.ERROR_MESSAGE);    
+                else {
+                    String details = ui.parser.getLastError();
+                    Collection<String> warnings = ui.parser.getWarnings();
+
+                    if ((details == null || details.isEmpty()) && !warnings.isEmpty())
+                        details = warnings.iterator().next();
+
+                    if (details == null || details.isEmpty())
+                        details = "no valid YANG models found";
+
+                    Notification.show("Failed to parse schemas: " + details,
+                            Notification.Type.ERROR_MESSAGE);
+
+                    if (!warnings.isEmpty())
+                        warnings.forEach(System.err::println);
+                }
             } catch (Exception e) {
                 Notification.show("Failed to retrieve schemas: " + (e.getCause() != null ?
                         e.getCause().getMessage() : e.getMessage()), Notification.Type.ERROR_MESSAGE);
