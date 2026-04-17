@@ -29,6 +29,36 @@ The original ANX codebase was maintained but relied on outdated dependencies tha
 4. **Complete documentation** for troubleshooting common issues
 
 ## Setup
+
+### First-Time Quick Start
+
+If this is your first time using the project, follow this minimal flow:
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/i9t6/anx.git
+cd anx
+```
+
+2. Start with Docker Compose:
+
+```bash
+docker compose up -d --build
+```
+
+3. Open the UI:
+
+- http://localhost:9269
+
+4. To stop the stack:
+
+```bash
+docker compose down
+```
+
+If you are using a private fork, replace the clone URL with your own fork URL.
+
 ### Using Docker
 
 You can easily build and run using docker:
