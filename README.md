@@ -59,6 +59,23 @@ docker compose down
 
 If you are using a private fork, replace the clone URL with your own fork URL.
 
+### Quick Onboarding (Copy/Paste)
+
+Use this short version in internal docs or repo descriptions:
+
+```bash
+git clone <your-fork-or-main-repo-url>
+cd anx
+docker compose up -d --build
+# open http://localhost:9269
+```
+
+To stop:
+
+```bash
+docker compose down
+```
+
 ### Using Docker
 
 You can easily build and run using docker:
