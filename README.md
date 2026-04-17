@@ -10,6 +10,24 @@ This is a graphical explorer for YANG models supported by a NETCONF device or se
 * GNMI and IOS XR Telemetry support tools to edit sensor groups and show live data using GRPC.
 * Browsing and searching live (operational) data for selected YANG models.
 
+## Recent Updates (2026)
+
+### Why This Project Was Updated
+
+The original ANX codebase was maintained but relied on outdated dependencies that were no longer actively maintained:
+
+**Original Issues:**
+- **Debian Buster (EOL)**: The original `debian:buster-slim` base image reached end-of-life, making it difficult to install modern packages or apply security updates
+- **Manual apt-get installs**: OpenJDK 11 and Jetty 9 were installed via apt, which often had timing issues and version incompatibilities
+- **Poor error diagnostics**: YANG model parsing failures showed only generic error messages, making debugging difficult
+- **Missing cache validation**: The yangcache directory creation wasn't guaranteed, causing silent failures during schema downloads
+
+**Solutions Applied:**
+1. **Modern multi-stage Docker build** using official, actively-maintained images
+2. **Detailed parse error reporting** to distinguish between download failures, schema resolution issues, and import dependencies
+3. **Robust cache directory creation** with proper permissions
+4. **Complete documentation** for troubleshooting common issues
+
 ## Setup
 ### Using Docker
 
